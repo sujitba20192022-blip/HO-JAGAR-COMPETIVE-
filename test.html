@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HO JAGAR COMPETITIVE - Test</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f5f9;
+      margin: 0;
+      padding: 15px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #173b72;
+    }
+
+    .test-box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+
+    .question {
+      font-size: 19px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .option {
+      display: block;
+      background: #f1f3f5;
+      padding: 13px;
+      margin: 10px 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .option:hover {
+      background: #e1e7ef;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 8px;
+      background: #173b72;
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>HO JAGAR COMPETITIVE</h1>
+
+  <div class="test-box">
+
+    <div id="question" class="question"></div>
+
+    <div id="options"></div>
+
+    <button onclick="nextQuestion()">Next</button>
+
+    <div id="result"></div>
+
+  </div>
+
+</div>
+
+<script>
+
+const questions = [
+
+  {
+    question: "भारत की राजधानी क्या है?",
+    options: ["रांची", "नई दिल्ली", "पटना", "कोलकाता"],
+    answer: 1
+  },
+
+  {
+    question: "झारखंड की राजधानी क्या है?",
+    options: ["रांची", "जमशेदपुर", "धनबाद", "बोकारो"],
+    answer: 0
+  },
+
+  {
+    question: "भारत का राष्ट्रीय पशु कौन है?",
+    options: ["शेर", "हाथी", "बाघ", "हिरण"],
+    answer: 2
+  }
+
+];
+
+let currentQuestion = 0;
+let score = 0;
+
+function showQuestion() {
+
+  const q = questions[currentQuestion];
+
+  document.getElementById("question").innerText =
+    "Q" + (currentQuestion + 1) + ". " + q.question;
+
+  const optionsDiv = document.getElementById("options");
+
+  optionsDiv.innerHTML = "";
+
+  q.options.forEach((option, index) => {
+
+    const label = document.createElement("label");
+
+    label.className = "option";
+
+    label.innerHTML =
+      '<input type="radio" name="answer" value="' +
+      index +
+      '"> ' +
+      option;
+
+    optionsDiv.appendChild(label);
+
+  });
+
+}
+
+function nextQuestion() {
+
+  const selected = document.querySelector(
+    'input[name="answer"]:checked'
+  );
+
+  if (!selected) {
+    alert("पहले एक उत्तर चुनें।");
+    return;
+  }
+
+  if (parseInt(selected.value) === questions[currentQuestion].answer) {
+    score++;
+  }
+
+  currentQuestion++;
+
+  if (currentQuestion < questions.length) {
+
+    showQuestion();
+
+  } else {
+
+    document.getElementById("question").innerText =
+      "Test पूरा हो गया!";
+
+    document.getElementById("options").innerHTML = "";
+
+    document.querySelector("button").style.display = "none";
+
+    document.getElementById("result").innerText =
+      "आपका Score: " + score + " / " + questions.length;
+
+  }
+
+}
+
+showQuestion();
+
+</script>
+
+</body>
+  </html>
