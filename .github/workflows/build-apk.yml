@@ -14,33 +14,46 @@ jobs:
       - name: Download repository
         uses: actions/checkout@v4
 
-      - name: Find and extract Android project
+      - name: Find ZIP file
+        id: find_zip
         run: |
-          mkdir android-project
-          ZIP=$(find . -maxdepth 1 -type f -name "*.zip" | head -n 1)
+          ZIP=$(find . -maxdepth 2 -type f -name "*.zip" | head -n 1)
 
           if [ -z "$ZIP" ]; then
             echo "ZIP file not found"
             exit 1
           fi
 
+          echo "ZIP=$ZIP" >> $GITHUB_ENV
+          echo "Found ZIP: $ZIP"
+
+      - name: Extract Android project
+        run: |
+          rm -rf android-project
+          mkdir android-project
+
           unzip -o "$ZIP" -d android-project
 
-          echo "Extracted files:"
-          find android-project -maxdepth 3 -type f | head -100
+          echo "Android project files:"
+          find android-project -maxdepth 4 -type f | head -150
 
-      - name: Find project folder
+      - name: Find Android project
         run: |
-          SETTINGS=$(find android-project -name settings.gradle -o -name settings.gradle.kts | head -n 1)
+          SETTINGS=$(find android-project \
+            \( -name "settings.gradle" -o -name "settings.gradle.kts" \) \
+            | head -n 1)
 
           if [ -z "$SETTINGS" ]; then
-            echo "settings.gradle not found"
+            echo "ERROR: settings.gradle not found"
             exit 1
           fi
 
           PROJECT_DIR=$(dirname "$SETTINGS")
+
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
-          echo "Android project found at: $PROJECT_DIR"
+
+          echo "Android project found:"
+          echo "$PROJECT_DIR"
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -51,23 +64,37 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
 
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-35"
+          sdkmanager "build-tools;35.0.0"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
 
-      - name: Build APK
+      - name: Give Gradle permission
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          gradle assembleDebug --stacktrace
+          chmod +x gradlew || true
+
+      - name: Build HO JAGAR APK
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          if [ -f "./gradlew" ]; then
+            ./gradlew assembleDebug --stacktrace
+          else
+            gradle assembleDebug --stacktrace
+          fi
 
       - name: Find APK
         run: |
+          echo "========== APK FILES =========="
           find android-project -type f -name "*.apk" -print
 
-      - name: Upload APK
+      - name: Upload Updated APK
         uses: actions/upload-artifact@v4
         with:
-          name: HO-JAGAR-COMPETITIVE-APK
+          name: HO-JAGAR-COMPETITIVE-UPDATED-APK
           path: android-project/**/*.apk
           if-no-files-found: error
